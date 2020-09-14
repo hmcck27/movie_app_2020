@@ -1,10 +1,7 @@
 import React from 'react';
-import { HashRouter, Route } from 'react-router-dom';
-import './App.css';
-import About from './routes/About';
-import Home from './routes/Home';
-import Navigation from './components/Navigation';
-import Detail from './routes/Detail';
+import Axios from 'axios';
+import Movie from '../components/Movie';
+import './Home.css';
 //import PropTypes from 'prop-types';
 
 // axios는 get을 통해서 API로부터 data를 받아온다.
@@ -12,17 +9,53 @@ import Detail from './routes/Detail';
 // axios는 네트워크를 통해서 작동하기 때문에 느리게 작동한다. 이때 get()이 반환한 데이터를 잡으려면,
 // get()이 데이터를 다 잡을 때까지 기다려야 한다.
 // 이를 위해서는 async와 wait를 사용해야 한다. 
+class Home extends React.Component {
 
-function App() {
-  return( 
-  <HashRouter>
-    <Navigation />
-    <Route path='/movie-detail' component={Detail}/>
-    <Route path='/about' component={About}/>
-    <Route path='/' exact={true} component={Home}/>
-  </HashRouter>
-  );
+  state = {
+    isLoading: true,
+    movies: []
+  };
+  componentDidMount() {
+    this.getMovies();
+  }
+
+  getMovies = async () => {
+    const {
+      data: {
+        data: {movies},
+      },
+    } =  await Axios.get('https://yts-proxy.now.sh/list_movies.json&sort_by=rating');
+    this.setState({ movies, isLoading: false });
+  }
+
+  render() {   
+    const { isLoading, movies } = this.state;
+    return (
+    <section className="container">
+      {isLoading ? (
+        <div className="loader">
+          <span className="loader__text">'Loading...'</span>
+        </div>
+        ) : (
+          <div className="movies">
+            {movies.map(movies => (
+              <Movie 
+              key = {movies.id}
+              id ={movies.id}
+              year = {movies.year}
+              title = {movies.title}
+              summary = {movies.summary}
+              poster = {movies.medium_cover_image}
+              genres = {movies.genres}
+            />
+          ))}
+        </div>
+      )}
+    </ section>
+    );
+  }
 }
+
 
 
 
@@ -170,4 +203,4 @@ function renderFood(dish) {
 // props를 이용해서 컴포넌트에 데이터를 보내는 방법 => fav = "~~~"
 
 
-export default App;
+export default Home;
